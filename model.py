@@ -28,7 +28,7 @@ def extract_features(audio_data, sample_rate=44100):
     
     frequencies = np.array(frequencies)
     
-    # Extract features
+    # Extracting features
     features = {
         'MDVP:Fo(Hz)': np.mean(frequencies),
         'MDVP:Fhi(Hz)': np.max(frequencies),
@@ -58,42 +58,31 @@ def extract_features(audio_data, sample_rate=44100):
     return features
 
 def main():
-    # Load and prepare the data
     data = pd.read_csv('pd_vocal_frequencies.csv')
     X = data.drop(columns=['name', 'status'])
     y = data['status']
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Train the model
+    
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
 
-    # Save the model
     joblib.dump(model, 'pd_diagnosis_model.pkl')
 
-    # Make predictions
     y_pred = model.predict(X_test)
 
-    # Evaluate the model
     print("Accuracy:", accuracy_score(y_test, y_pred))
-
-    # Load the trained model for testing new input
     model = joblib.load('pd_diagnosis_model.pkl')
 
-    # Display the motivational quote for the user to read
     print("\nPlease read the following quote aloud while recording your voice:")
     print("Today is going to be a very good day for me! \n")
 
-    # Record a new voice sample for testing
     duration = 5  # seconds
     new_audio_data, sample_rate = record_audio(duration)
     
-    # Extract features from the new audio data
     new_audio_features = extract_features(new_audio_data, sample_rate)
     new_audio_features_df = pd.DataFrame([new_audio_features])
 
-    # Predict the diagnosis for the new audio sample
     diagnosis_prediction = model.predict(new_audio_features_df)
     print("Predicted Diagnosis for the new audio sample:", 'PD' if diagnosis_prediction[0] == 1 else 'Non-PD')
 
